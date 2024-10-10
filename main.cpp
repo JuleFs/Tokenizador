@@ -70,21 +70,20 @@ private:
     Node* tail;
 };
 
-//TODO: llenar los campos del token dependiendo del automata que acepte la cadena
-void insertarNodo(const string& line, DoublyLinkedList &tokenList, int lineNumber) {
+void insertarNodo(const string& line, DoublyLinkedList &tokenList, int lineNumber, int lastPos) {
     if (automata_NR(line))
-        tokenList.insert(Token("numReal", 0, lineNumber, 0, line ));
+        tokenList.insert(Token("numReal", stoi(line), lineNumber, lastPos + 1, line ));
 
     else if (automata_NE(line)) {
-        tokenList.insert(Token("numEntero", 0, lineNumber, 0, line ));
+        tokenList.insert(Token("numEntero", stoi(line), lineNumber, lastPos + 1, line ));
     }
 
     else if (automata_IDEN(line)) {
-        tokenList.insert(Token("id", 0, lineNumber, 0, line ));
+        tokenList.insert(Token("id", 0, lineNumber, lastPos + 1, line ));
     }
 
     else if (automata_PALRES(line)) {
-        tokenList.insert(Token("palRes", 0, lineNumber, 0, line ));
+        tokenList.insert(Token("palRes", 0, lineNumber, lastPos + 1, line ));
     }
 }
 
@@ -134,28 +133,27 @@ void processLineWithSymbols(const string& line, DoublyLinkedList& tokenList, int
     // Combinamos ambas expresiones en una sola para detectar ambos tipos
     regex combined_regex(R"((<=|>=|==|=|!=|<|>|\(|\)|,|;|\.|\s|[\+\-\*/]))");
 
-    size_t lastPos = 0; // Posición inicial para el análisis de texto
+    int lastPos = 0; // Posición inicial para el análisis de texto
     sregex_iterator iter(line.begin(), line.end(), combined_regex);
     sregex_iterator end;
 
     while (iter != end) {
         smatch match = *iter;
-        size_t symbolPos = match.position();
+        int symbolPos = match.position();
 
         // Procesar el texto antes del símbolo o signo
         if (symbolPos > lastPos) {
             string beforeSymbol = line.substr(lastPos, symbolPos - lastPos);
-
-            insertarNodo(beforeSymbol, tokenList, lineNumber);
+            insertarNodo(beforeSymbol, tokenList, lineNumber, lastPos);
         }
 
         // Insertar el símbolo o signo encontrado como token
         string symbol = match.str();
         if (symbol != " ") {
             if (regex_match(symbol, signs_regex)) {
-                tokenList.insert({"Sign", 0, lineNumber, static_cast<int>(match.position()),  match.str() });
+                tokenList.insert({"Sign", 0, lineNumber, static_cast<int>(match.position() + 1),  match.str() });
             } else {
-                tokenList.insert({"Simbolo", 0, lineNumber, static_cast<int>(match.position()),  match.str() });
+                tokenList.insert({"Simbolo", 0, lineNumber, static_cast<int>(match.position()+ 1),  match.str() });
             }
         }
 
@@ -168,7 +166,7 @@ void processLineWithSymbols(const string& line, DoublyLinkedList& tokenList, int
     if (lastPos < line.size()) {
         string remainingText = line.substr(lastPos);
 
-        insertarNodo(remainingText, tokenList, lineNumber);
+        insertarNodo(remainingText, tokenList, lineNumber, lastPos);
         }
 }
 
