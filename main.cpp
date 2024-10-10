@@ -124,7 +124,6 @@ vector<Token> analyzeSigns(const string& text, int lineNumber) {
     return tokens;
 }
 
-
 void processLineWithSymbols(const string& line, DoublyLinkedList& tokenList, int lineNumber) {
     // Expresiones regulares para detectar símbolos y signos
     regex symbols_regex(R"((<=|>=|==|=|!=|<|>|\(|\)|,|;|\.|\s))");
